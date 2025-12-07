@@ -7,10 +7,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Subject {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique
-  name      String
-  credit    Int
-  createdAt DateTime @default(now())
+model Student {
+  id            Int      @id @default(autoincrement())
+  sbd           String   @unique @db.VarChar(10)
+  ma_ngoai_ngu  String?  @db.VarChar(5)
+  scores        Score[]
+
+  @@index([sbd])
 }
+
+model Subject {
+  id     Int     @id @default(autoincrement())
+  code   String  @unique @db.VarChar(10)
+  name   String  @db.VarChar(100)
+  scores Score[]
+
+  @@index([code])
+}
+
+model Score {
+  id         Int      @id @default(autoincrement())
+  score      Decimal? @db.Decimal(5, 2)
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId  Int
+  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId  Int      @db.SmallInt
+
+  @@unique([studentId, subjectId])
+  @@index([studentId])
+  @@index([subjectId])
+  @@index([score])
+  @@index([studentId, subjectId, score])
+}
+
