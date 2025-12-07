@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Student } from '../entities/student.entity';
-import { Score } from '../../subjects/entities/score.entity';
+import { Score } from '../../scores/entities/score.entity';
 
 /**
  * StudentRepository - Repository pattern để quản lý Student

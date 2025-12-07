@@ -1,4 +1,4 @@
-import { Subject } from './subject.entity';
+import { Subject } from '../../subjects/entities/subject.entity';
 
 /**
  * Score Entity - Đại diện cho một điểm số

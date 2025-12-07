@@ -1,4 +1,4 @@
-import { Score } from '../../subjects/entities/score.entity';
+import { Score } from '../../scores/entities/score.entity';
 
 /**
  * Student Entity - Đại diện cho một thí sinh

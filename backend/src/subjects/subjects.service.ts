@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SubjectRepository } from './repositories/subject.repository';
-import { ScoreRepository } from './repositories/score.repository';
+import { ScoreRepository } from '../scores/repositories/score.repository';
 import { Subject } from './entities/subject.entity';
 
 /**

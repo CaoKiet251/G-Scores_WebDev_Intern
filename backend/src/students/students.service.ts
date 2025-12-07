@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { StudentRepository } from './repositories/student.repository';
 import { SubjectRepository } from '../subjects/repositories/subject.repository';
-import { ScoreRepository } from '../subjects/repositories/score.repository';
+import { ScoreRepository } from '../scores/repositories/score.repository';
 
 /**
  * StudentsService - Service layer để quản lý business logic của Students
