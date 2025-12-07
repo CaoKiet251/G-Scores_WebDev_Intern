@@ -8,21 +8,33 @@ export class StudentsController {
   /**
    * API tìm kiếm điểm của thí sinh theo số báo danh
    * GET /students/:sbd/scores
-   * @param sbd - Số báo danh của thí sinh (tối đa 10 ký tự)
+   * @param sbd - Số báo danh của thí sinh (phải > 8 ký tự, chỉ chứa số, tối đa 10 ký tự)
    * @returns Thông tin thí sinh và danh sách điểm các môn
    */
   @Get(':sbd/scores')
   async getScoresBySbd(@Param('sbd') sbd: string) {
-    // Validate input: SBD không được rỗng và không quá 10 ký tự (theo schema)
-    if (!sbd || sbd.trim().length === 0) {
-      throw new BadRequestException('SBD không được để trống');
-    }
-    
-    if (sbd.length > 10) {
-      throw new BadRequestException('SBD không được vượt quá 10 ký tự');
-    }
     // Trim để loại bỏ khoảng trắng thừa
     const trimmedSbd = sbd.trim();
+
+    // Validate input: SBD không được rỗng
+    if (!trimmedSbd || trimmedSbd.length === 0) {
+      throw new BadRequestException('SBD không được để trống');
+    }
+
+    // Validate: SBD phải lớn hơn 8 ký tự
+    if (trimmedSbd.length <= 8) {
+      throw new BadRequestException('SBD phải lớn hơn 8 ký tự');
+    }
+
+    // Validate: SBD không được vượt quá 10 ký tự
+    if (trimmedSbd.length > 10) {
+      throw new BadRequestException('SBD không được vượt quá 10 ký tự');
+    }
+
+    // Validate: SBD chỉ được chứa số
+    if (!/^[0-9]+$/.test(trimmedSbd)) {
+      throw new BadRequestException('SBD chỉ được chứa số');
+    }
     
     return this.studentsService.findScoresBySbd(trimmedSbd);
   }
@@ -42,4 +54,3 @@ export class StudentsController {
     return this.studentsService.getTopGroupA(validLimit);
   }
 }
-

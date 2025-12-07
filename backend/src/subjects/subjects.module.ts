@@ -4,9 +4,10 @@ import { SubjectsService } from './subjects.service';
 import { SubjectRepository } from './repositories/subject.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { ScoresModule } from '../scores/scores.module';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
-  imports: [ScoresModule], // Import ScoresModule để sử dụng ScoreRepository
+  imports: [ScoresModule, RedisModule], // Import ScoresModule và RedisModule
   controllers: [SubjectsController],
   providers: [SubjectsService, SubjectRepository, PrismaService],
   exports: [SubjectsService, SubjectRepository], // Export để các module khác sử dụng

@@ -1,28 +1,49 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { StudentRepository } from './repositories/student.repository';
 import { SubjectRepository } from '../subjects/repositories/subject.repository';
 import { ScoreRepository } from '../scores/repositories/score.repository';
+import { RedisService } from '../redis/redis.service';
 
 /**
  * StudentsService - Service layer để quản lý business logic của Students
  * Sử dụng OOP principles: Service pattern, Dependency Injection, Repository pattern
+ * Tối ưu: Sử dụng Redis cache cho dữ liệu ít thay đổi
  */
 @Injectable()
 export class StudentsService {
+  private readonly CACHE_KEYS = {
+    TOP_GROUP_A: (limit: number) => `students:top-group-a:${limit}`,
+    STUDENT_SCORES: (sbd: string) => `student:scores:${sbd}`,
+  };
+
+  private readonly CACHE_TTL = {
+    TOP_GROUP_A: 1800, // 30 phút
+    STUDENT_SCORES: 3600, // 1 giờ
+  };
+
   constructor(
     private studentRepository: StudentRepository,
     private subjectRepository: SubjectRepository,
     private scoreRepository: ScoreRepository,
+    private redisService: RedisService,
   ) {}
 
   /**
    * Tìm kiếm điểm của thí sinh theo số báo danh (SBD)
    * Sử dụng OOP: Repository pattern và Entity pattern
-   * Tối ưu: Chỉ select các field cần thiết, sử dụng join hiệu quả
+   * Tối ưu: Chỉ select các field cần thiết, sử dụng join hiệu quả, cache kết quả
    * @param sbd - Số báo danh của thí sinh
    * @returns Thông tin thí sinh và danh sách điểm các môn (sử dụng entities)
    */
   async findScoresBySbd(sbd: string) {
+    const cacheKey = this.CACHE_KEYS.STUDENT_SCORES(sbd);
+
+    // Kiểm tra cache
+    const cached = await this.redisService.get<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     // Sử dụng Repository pattern: Tìm student với scores
     const student = await this.studentRepository.findBySbdWithScores(sbd);
 
@@ -31,22 +52,64 @@ export class StudentsService {
     }
 
     // Sử dụng OOP: Chuyển đổi entity sang DTO
-    return student.toDTO();
+    const result = student.toDTO();
+
+    // Lưu vào cache
+    await this.redisService.set(cacheKey, result, this.CACHE_TTL.STUDENT_SCORES);
+
+    return result;
   }
 
   /**
    * Lấy top N học sinh khối A (Toán, Vật Lý, Hóa Học)
-   * Tối ưu: Sử dụng raw query với aggregation để tăng tốc độ xử lý
+   * Tối ưu: Sử dụng raw query với aggregation và Redis cache
    * Chỉ trả về các field cần thiết để giảm dung lượng
    * @param limit - Số lượng học sinh cần lấy (mặc định 10)
    * @returns Danh sách top học sinh khối A với điểm từng môn và tổng điểm
    */
   async getTopGroupA(limit: number = 10) {
     if (limit < 1 || limit > 100) {
-      throw new Error('Limit phải từ 1 đến 100');
+      throw new BadRequestException('Limit phải từ 1 đến 100');
     }
 
-    return this.studentRepository.findTopGroupA(limit);
+    const cacheKey = this.CACHE_KEYS.TOP_GROUP_A(limit);
+
+    // Kiểm tra cache
+    const cached = await this.redisService.get<any[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Lấy từ database
+    const result = await this.studentRepository.findTopGroupA(limit);
+
+    // Lưu vào cache
+    await this.redisService.set(cacheKey, result, this.CACHE_TTL.TOP_GROUP_A);
+
+    return result;
+  }
+
+  /**
+   * Xóa cache của top group A
+   */
+  async invalidateTopGroupACache(limit?: number): Promise<void> {
+    if (limit) {
+      await this.redisService.delete(this.CACHE_KEYS.TOP_GROUP_A(limit));
+    } else {
+      // Xóa tất cả cache của top group A
+      await this.redisService.deletePattern('students:top-group-a:*');
+    }
+  }
+
+  /**
+   * Xóa cache của student scores
+   */
+  async invalidateStudentScoresCache(sbd?: string): Promise<void> {
+    if (sbd) {
+      await this.redisService.delete(this.CACHE_KEYS.STUDENT_SCORES(sbd));
+    } else {
+      // Xóa tất cả cache của student scores
+      await this.redisService.deletePattern('student:scores:*');
+    }
   }
 }
-
