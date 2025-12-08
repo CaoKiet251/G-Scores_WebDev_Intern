@@ -12,19 +12,7 @@
 - PostgreSQL 15+ và Redis 7+ (nếu không dùng Docker).
 - Docker & Docker Compose (tùy chọn, chạy nhanh toàn bộ stack).
 
-
-## Chạy nhanh bằng Docker
-1) Sao chép repo, đảm bảo Docker đang chạy.
-2) Khởi động stack:
-   - `docker compose up -d --build`
-   - Backend sẽ chạy ở port `3000`, frontend ở `5173`.
-3) (Khuyến nghị) Chạy migrate thủ công nếu cần:
-   - `docker compose exec backend npx prisma migrate deploy`
-4) Nhập dữ liệu mẫu:
-   - `docker compose exec backend npm run import:data`
-5) Mở trình duyệt: http://localhost:5173
-
-## Chạy thủ công 
+## Hướng dẫn chạy dựa ns
 ### 1. Backend
 ```bash
 cd backend
