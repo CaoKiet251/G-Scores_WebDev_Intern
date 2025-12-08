@@ -117,5 +117,4 @@ export class RedisService implements OnModuleInit {
     } catch {
       this.isHealthy = false;
     }
-  }
-}
+  }}

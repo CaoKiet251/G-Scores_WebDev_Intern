@@ -8,7 +8,7 @@ export class StudentsController {
   /**
    * API tìm kiếm điểm của thí sinh theo số báo danh
    * GET /students/:sbd/scores
-   * @param sbd - Số báo danh của thí sinh (phải > 8 ký tự, chỉ chứa số, tối đa 10 ký tự)
+   * @param sbd - Số báo danh của thí sinh (phải đúng 8 ký tự, chỉ chứa số)
    * @returns Thông tin thí sinh và danh sách điểm các môn
    */
   @Get(':sbd/scores')
@@ -21,14 +21,9 @@ export class StudentsController {
       throw new BadRequestException('SBD không được để trống');
     }
 
-    // Validate: SBD phải lớn hơn 8 ký tự
-    if (trimmedSbd.length <= 8) {
-      throw new BadRequestException('SBD phải lớn hơn 8 ký tự');
-    }
-
-    // Validate: SBD không được vượt quá 10 ký tự
-    if (trimmedSbd.length > 10) {
-      throw new BadRequestException('SBD không được vượt quá 10 ký tự');
+    // Validate: SBD phải đúng 8 ký tự
+    if (trimmedSbd.length !== 8) {
+      throw new BadRequestException('SBD phải đủ 8 ký tự');
     }
 
     // Validate: SBD chỉ được chứa số
@@ -52,5 +47,41 @@ export class StudentsController {
   ) {
     const validLimit = limit && limit > 0 && limit <= 100 ? limit : 10;
     return this.studentsService.getTopGroupA(validLimit);
+  }
+
+  /**
+   * API lấy top N học sinh khối B (Toán, Hóa Học, Sinh Học)
+   * GET /students/top/group-b?limit=10
+   */
+  @Get('top/group-b')
+  async getTopGroupB(
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+  ) {
+    const validLimit = limit && limit > 0 && limit <= 100 ? limit : 10;
+    return this.studentsService.getTopGroupB(validLimit);
+  }
+
+  /**
+   * API lấy top N học sinh khối C (Ngữ Văn, Lịch Sử, Địa Lí)
+   * GET /students/top/group-c?limit=10
+   */
+  @Get('top/group-c')
+  async getTopGroupC(
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+  ) {
+    const validLimit = limit && limit > 0 && limit <= 100 ? limit : 10;
+    return this.studentsService.getTopGroupC(validLimit);
+  }
+
+  /**
+   * API lấy top N học sinh khối D (Toán, Ngữ Văn, Ngoại Ngữ)
+   * GET /students/top/group-d?limit=10
+   */
+  @Get('top/group-d')
+  async getTopGroupD(
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+  ) {
+    const validLimit = limit && limit > 0 && limit <= 100 ? limit : 10;
+    return this.studentsService.getTopGroupD(validLimit);
   }
 }

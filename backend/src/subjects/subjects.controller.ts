@@ -26,4 +26,16 @@ export class SubjectsController {
   async getScoreLevelStatistics() {
     return this.subjectsService.getScoreLevelStatistics();
   }
+
+  /**
+   * API lấy phổ điểm (score distribution) theo các khoảng điểm cho tất cả môn học
+   * GET /subjects/statistics/score-distribution
+   * Chia điểm thành các khoảng: 0-1, 1-2, 2-3, ..., 9-10
+   * Tối ưu: Sử dụng raw query với aggregation và Redis cache
+   * @returns Phổ điểm theo từng môn học với số lượng học sinh ở mỗi khoảng điểm
+   */
+  @Get('statistics/score-distribution')
+  async getScoreDistribution() {
+    return this.subjectsService.getScoreDistribution();
+  }
 }

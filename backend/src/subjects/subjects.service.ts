@@ -13,11 +13,13 @@ import { Subject } from './entities/subject.entity';
 export class SubjectsService {
   private readonly CACHE_KEYS = {
     SCORE_STATISTICS: 'statistics:score-levels',
+    SCORE_DISTRIBUTION: 'statistics:score-distribution',
     ALL_SUBJECTS: 'subjects:all',
   };
 
   private readonly CACHE_TTL = {
     SCORE_STATISTICS: 3600, // 1 giờ
+    SCORE_DISTRIBUTION: 7200, // 2 giờ (tăng từ 1 giờ vì dữ liệu ít thay đổi)
     ALL_SUBJECTS: 7200, // 2 giờ
   };
 
@@ -108,6 +110,42 @@ export class SubjectsService {
    */
   async invalidateScoreStatisticsCache(): Promise<void> {
     await this.redisService.delete(this.CACHE_KEYS.SCORE_STATISTICS);
+  }
+
+  /**
+   * Lấy phổ điểm (score distribution) theo các khoảng điểm cho tất cả môn học
+   * Chia điểm thành các khoảng: 0-1, 1-2, 2-3, ..., 9-10
+   * Tối ưu: Sử dụng raw query với aggregation và Redis cache
+   * @returns Phổ điểm theo từng môn học với số lượng học sinh ở mỗi khoảng điểm
+   */
+  async getScoreDistribution() {
+    const cacheKey = this.CACHE_KEYS.SCORE_DISTRIBUTION;
+
+    // Kiểm tra cache
+    const cached = await this.redisService.get<any[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Lấy từ database
+    const distribution = await this.scoreRepository.getScoreDistribution();
+
+    // Lưu vào cache
+    await this.redisService.set(
+      cacheKey,
+      distribution,
+      this.CACHE_TTL.SCORE_DISTRIBUTION,
+    );
+
+    return distribution;
+  }
+
+  /**
+   * Xóa cache của thống kê điểm số
+   * Sử dụng khi có dữ liệu mới được thêm vào
+   */
+  async invalidateScoreDistributionCache(): Promise<void> {
+    await this.redisService.delete(this.CACHE_KEYS.SCORE_DISTRIBUTION);
   }
 
   /**

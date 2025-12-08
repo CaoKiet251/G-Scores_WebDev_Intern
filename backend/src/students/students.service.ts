@@ -13,11 +13,17 @@ import { RedisService } from '../redis/redis.service';
 export class StudentsService {
   private readonly CACHE_KEYS = {
     TOP_GROUP_A: (limit: number) => `students:top-group-a:${limit}`,
+    TOP_GROUP_B: (limit: number) => `students:top-group-b:${limit}`,
+    TOP_GROUP_C: (limit: number) => `students:top-group-c:${limit}`,
+    TOP_GROUP_D: (limit: number) => `students:top-group-d:${limit}`,
     STUDENT_SCORES: (sbd: string) => `student:scores:${sbd}`,
   };
 
   private readonly CACHE_TTL = {
     TOP_GROUP_A: 1800, // 30 phút
+    TOP_GROUP_B: 1800,
+    TOP_GROUP_C: 1800,
+    TOP_GROUP_D: 1800,
     STUDENT_SCORES: 3600, // 1 giờ
   };
 
@@ -89,6 +95,42 @@ export class StudentsService {
     return result;
   }
 
+  async getTopGroupB(limit: number = 10) {
+    if (limit < 1 || limit > 100) {
+      throw new BadRequestException('Limit phải từ 1 đến 100');
+    }
+    const cacheKey = this.CACHE_KEYS.TOP_GROUP_B(limit);
+    const cached = await this.redisService.get<any[]>(cacheKey);
+    if (cached) return cached;
+    const result = await this.studentRepository.findTopGroupB(limit);
+    await this.redisService.set(cacheKey, result, this.CACHE_TTL.TOP_GROUP_B);
+    return result;
+  }
+
+  async getTopGroupC(limit: number = 10) {
+    if (limit < 1 || limit > 100) {
+      throw new BadRequestException('Limit phải từ 1 đến 100');
+    }
+    const cacheKey = this.CACHE_KEYS.TOP_GROUP_C(limit);
+    const cached = await this.redisService.get<any[]>(cacheKey);
+    if (cached) return cached;
+    const result = await this.studentRepository.findTopGroupC(limit);
+    await this.redisService.set(cacheKey, result, this.CACHE_TTL.TOP_GROUP_C);
+    return result;
+  }
+
+  async getTopGroupD(limit: number = 10) {
+    if (limit < 1 || limit > 100) {
+      throw new BadRequestException('Limit phải từ 1 đến 100');
+    }
+    const cacheKey = this.CACHE_KEYS.TOP_GROUP_D(limit);
+    const cached = await this.redisService.get<any[]>(cacheKey);
+    if (cached) return cached;
+    const result = await this.studentRepository.findTopGroupD(limit);
+    await this.redisService.set(cacheKey, result, this.CACHE_TTL.TOP_GROUP_D);
+    return result;
+  }
+
   /**
    * Xóa cache của top group A
    */
@@ -98,6 +140,30 @@ export class StudentsService {
     } else {
       // Xóa tất cả cache của top group A
       await this.redisService.deletePattern('students:top-group-a:*');
+    }
+  }
+
+  async invalidateTopGroupBCache(limit?: number): Promise<void> {
+    if (limit) {
+      await this.redisService.delete(this.CACHE_KEYS.TOP_GROUP_B(limit));
+    } else {
+      await this.redisService.deletePattern('students:top-group-b:*');
+    }
+  }
+
+  async invalidateTopGroupCCache(limit?: number): Promise<void> {
+    if (limit) {
+      await this.redisService.delete(this.CACHE_KEYS.TOP_GROUP_C(limit));
+    } else {
+      await this.redisService.deletePattern('students:top-group-c:*');
+    }
+  }
+
+  async invalidateTopGroupDCache(limit?: number): Promise<void> {
+    if (limit) {
+      await this.redisService.delete(this.CACHE_KEYS.TOP_GROUP_D(limit));
+    } else {
+      await this.redisService.deletePattern('students:top-group-d:*');
     }
   }
 

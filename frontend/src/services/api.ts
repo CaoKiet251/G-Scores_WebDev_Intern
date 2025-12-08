@@ -48,6 +48,33 @@ export interface TopGroupAStudent {
   totalScore: number; // Tổng điểm 3 môn
 }
 
+export interface TopGroupBStudent {
+  sbd: string;
+  ma_ngoai_ngu: string | null;
+  toan: number | null;
+  hoa_hoc: number | null;
+  sinh_hoc: number | null;
+  totalScore: number;
+}
+
+export interface TopGroupCStudent {
+  sbd: string;
+  ma_ngoai_ngu: string | null;
+  ngu_van: number | null;
+  lich_su: number | null;
+  dia_li: number | null;
+  totalScore: number;
+}
+
+export interface TopGroupDStudent {
+  sbd: string;
+  ma_ngoai_ngu: string | null;
+  toan: number | null;
+  ngu_van: number | null;
+  ngoai_ngu: number | null;
+  totalScore: number;
+}
+
 /**
  * ScoreLevelStatistics Interface
  * 
@@ -61,6 +88,20 @@ export interface ScoreLevelStatistics {
   levelAverage: number; // Số lượng học sinh >= 4 và < 6 điểm
   levelPoor: number; // Số lượng học sinh < 4 điểm
   total: number; // Tổng số học sinh có điểm
+}
+
+/**
+ * ScoreDistribution Interface
+ * 
+ * Interface định nghĩa cấu trúc phổ điểm (score distribution)
+ */
+export interface ScoreDistribution {
+  subjectCode: string; // Mã môn học
+  subjectName: string; // Tên môn học
+  distribution: Array<{
+    range: string; // Khoảng điểm: "0-1", "1-2", ..., "9-10"
+    count: number; // Số lượng học sinh trong khoảng này
+  }>;
 }
 
 /**
@@ -92,6 +133,21 @@ export const api = {
     return response.data;
   },
 
+  getTopGroupB: async (limit: number = 10): Promise<TopGroupBStudent[]> => {
+    const response = await apiClient.get<TopGroupBStudent[]>(`/students/top/group-b?limit=${limit}`);
+    return response.data;
+  },
+
+  getTopGroupC: async (limit: number = 10): Promise<TopGroupCStudent[]> => {
+    const response = await apiClient.get<TopGroupCStudent[]>(`/students/top/group-c?limit=${limit}`);
+    return response.data;
+  },
+
+  getTopGroupD: async (limit: number = 10): Promise<TopGroupDStudent[]> => {
+    const response = await apiClient.get<TopGroupDStudent[]>(`/students/top/group-d?limit=${limit}`);
+    return response.data;
+  },
+
   /**
    * Lấy thống kê điểm theo 4 mức độ cho tất cả môn học
    * 
@@ -109,6 +165,17 @@ export const api = {
    */
   getAllSubjects: async () => {
     const response = await apiClient.get('/subjects');
+    return response.data;
+  },
+
+  /**
+   * Lấy phổ điểm (score distribution) theo các khoảng điểm cho tất cả môn học
+   * Chia điểm thành các khoảng: 0-1, 1-2, 2-3, ..., 9-10
+   * 
+   * @returns Promise<ScoreDistribution[]> - Phổ điểm theo từng môn học
+   */
+  getScoreDistribution: async (): Promise<ScoreDistribution[]> => {
+    const response = await apiClient.get<ScoreDistribution[]>('/subjects/statistics/score-distribution');
     return response.data;
   },
 };

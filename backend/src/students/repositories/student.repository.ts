@@ -179,5 +179,134 @@ export class StudentRepository {
       totalScore: Number(row.total_score),
     }));
   }
+
+  /**
+   * Top khối B (Toán, Hóa Học, Sinh Học)
+   */
+  async findTopGroupB(limit: number = 10) {
+    const result = await this.prisma.$queryRaw<Array<{
+      sbd: string;
+      ma_ngoai_ngu: string | null;
+      toan: number | null;
+      hoa_hoc: number | null;
+      sinh_hoc: number | null;
+      total_score: number;
+    }>>`
+      SELECT 
+        s.sbd,
+        s.ma_ngoai_ngu,
+        MAX(CASE WHEN sub.code = 'TOAN' THEN sc.score::float END) as toan,
+        MAX(CASE WHEN sub.code = 'HOA_HOC' THEN sc.score::float END) as hoa_hoc,
+        MAX(CASE WHEN sub.code = 'SINH_HOC' THEN sc.score::float END) as sinh_hoc,
+        COALESCE(
+          SUM(CASE WHEN sub.code IN ('TOAN', 'HOA_HOC', 'SINH_HOC') THEN sc.score::float ELSE 0 END),
+          0
+        )::float as total_score
+      FROM "Student" s
+      INNER JOIN "Score" sc ON sc."studentId" = s.id
+      INNER JOIN "Subject" sub ON sub.id = sc."subjectId"
+      WHERE sub.code IN ('TOAN', 'HOA_HOC', 'SINH_HOC')
+        AND sc.score IS NOT NULL
+      GROUP BY s.id, s.sbd, s.ma_ngoai_ngu
+      HAVING COUNT(DISTINCT CASE WHEN sub.code IN ('TOAN', 'HOA_HOC', 'SINH_HOC') THEN sub.code END) = 3
+      ORDER BY total_score DESC
+      LIMIT ${limit}
+    `;
+
+    return result.map((row) => ({
+      sbd: row.sbd,
+      ma_ngoai_ngu: row.ma_ngoai_ngu,
+      toan: row.toan,
+      hoa_hoc: row.hoa_hoc,
+      sinh_hoc: row.sinh_hoc,
+      totalScore: Number(row.total_score),
+    }));
+  }
+
+  /**
+   * Top khối C (Ngữ Văn, Lịch Sử, Địa Lí)
+   */
+  async findTopGroupC(limit: number = 10) {
+    const result = await this.prisma.$queryRaw<Array<{
+      sbd: string;
+      ma_ngoai_ngu: string | null;
+      ngu_van: number | null;
+      lich_su: number | null;
+      dia_li: number | null;
+      total_score: number;
+    }>>`
+      SELECT 
+        s.sbd,
+        s.ma_ngoai_ngu,
+        MAX(CASE WHEN sub.code = 'NGU_VAN' THEN sc.score::float END) as ngu_van,
+        MAX(CASE WHEN sub.code = 'LICH_SU' THEN sc.score::float END) as lich_su,
+        MAX(CASE WHEN sub.code = 'DIA_LI' THEN sc.score::float END) as dia_li,
+        COALESCE(
+          SUM(CASE WHEN sub.code IN ('NGU_VAN', 'LICH_SU', 'DIA_LI') THEN sc.score::float ELSE 0 END),
+          0
+        )::float as total_score
+      FROM "Student" s
+      INNER JOIN "Score" sc ON sc."studentId" = s.id
+      INNER JOIN "Subject" sub ON sub.id = sc."subjectId"
+      WHERE sub.code IN ('NGU_VAN', 'LICH_SU', 'DIA_LI')
+        AND sc.score IS NOT NULL
+      GROUP BY s.id, s.sbd, s.ma_ngoai_ngu
+      HAVING COUNT(DISTINCT CASE WHEN sub.code IN ('NGU_VAN', 'LICH_SU', 'DIA_LI') THEN sub.code END) = 3
+      ORDER BY total_score DESC
+      LIMIT ${limit}
+    `;
+
+    return result.map((row) => ({
+      sbd: row.sbd,
+      ma_ngoai_ngu: row.ma_ngoai_ngu,
+      ngu_van: row.ngu_van,
+      lich_su: row.lich_su,
+      dia_li: row.dia_li,
+      totalScore: Number(row.total_score),
+    }));
+  }
+
+  /**
+   * Top khối D (Toán, Ngữ Văn, Ngoại Ngữ)
+   */
+  async findTopGroupD(limit: number = 10) {
+    const result = await this.prisma.$queryRaw<Array<{
+      sbd: string;
+      ma_ngoai_ngu: string | null;
+      toan: number | null;
+      ngu_van: number | null;
+      ngoai_ngu: number | null;
+      total_score: number;
+    }>>`
+      SELECT 
+        s.sbd,
+        s.ma_ngoai_ngu,
+        MAX(CASE WHEN sub.code = 'TOAN' THEN sc.score::float END) as toan,
+        MAX(CASE WHEN sub.code = 'NGU_VAN' THEN sc.score::float END) as ngu_van,
+        MAX(CASE WHEN sub.code = 'NGOAI_NGU' THEN sc.score::float END) as ngoai_ngu,
+        COALESCE(
+          SUM(CASE WHEN sub.code IN ('TOAN', 'NGU_VAN', 'NGOAI_NGU') THEN sc.score::float ELSE 0 END),
+          0
+        )::float as total_score
+      FROM "Student" s
+      INNER JOIN "Score" sc ON sc."studentId" = s.id
+      INNER JOIN "Subject" sub ON sub.id = sc."subjectId"
+      WHERE sub.code IN ('TOAN', 'NGU_VAN', 'NGOAI_NGU')
+        AND sc.score IS NOT NULL
+      GROUP BY s.id, s.sbd, s.ma_ngoai_ngu
+      HAVING COUNT(DISTINCT CASE WHEN sub.code IN ('TOAN', 'NGU_VAN', 'NGOAI_NGU') THEN sub.code END) = 3
+      ORDER BY total_score DESC
+      LIMIT ${limit}
+    `;
+
+    return result.map((row) => ({
+      sbd: row.sbd,
+      ma_ngoai_ngu: row.ma_ngoai_ngu,
+      toan: row.toan,
+      ngu_van: row.ngu_van,
+      ngoai_ngu: row.ngoai_ngu,
+      totalScore: Number(row.total_score),
+    }));
+  }
 }
 

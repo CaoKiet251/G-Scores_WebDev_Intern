@@ -38,5 +38,6 @@ model Score {
   @@index([subjectId])
   @@index([score])
   @@index([studentId, subjectId, score])
+  @@index([subjectId, score]) // Tối ưu cho query phổ điểm: JOIN và filter theo score
 }
 
