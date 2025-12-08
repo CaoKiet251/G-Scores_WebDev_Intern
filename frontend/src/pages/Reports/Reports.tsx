@@ -15,7 +15,10 @@ import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import { api } from '../../services/api';
 import type { ScoreLevelStatistics } from '../../services/api';
 
-// Register Chart.js components
+/**
+ * Register Chart.js components
+ * Cần register các components trước khi sử dụng
+ */
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -28,26 +31,46 @@ ChartJS.register(
   Legend
 );
 
+/**
+ * Reports Component
+ * 
+ * Component hiển thị báo cáo thống kê điểm số với các biểu đồ:
+ * - Bar Chart: So sánh điểm theo môn học (4 mức độ)
+ * - Doughnut Chart: Phân bố tổng quan tất cả môn
+ * - Line Chart: Xu hướng tổng điểm theo môn
+ * - Summary Cards: Tổng số học sinh ở mỗi mức điểm
+ * - Data Table: Bảng dữ liệu chi tiết
+ * 
+ * @returns JSX Element
+ */
 export default function Reports() {
+  // State lưu thống kê điểm theo môn học
   const [statistics, setStatistics] = useState<ScoreLevelStatistics[]>([]);
+  
+  // State quản lý trạng thái loading
   const [loading, setLoading] = useState(true);
 
+  /**
+   * Fetch thống kê điểm số khi component mount
+   */
   useEffect(() => {
     const fetchStatistics = async () => {
       try {
         setLoading(true);
+        // Gọi API để lấy thống kê điểm theo 4 mức độ
         const data = await api.getScoreLevelStatistics();
         setStatistics(data);
       } catch (error) {
-        console.error('Error fetching statistics:', error);
+        // Silent error handling
       } finally {
         setLoading(false);
       }
     };
 
     fetchStatistics();
-  }, []);
+  }, []); // Chỉ chạy 1 lần khi component mount
 
+  // Hiển thị loading state
   if (loading) {
     return (
       <div className="w-full">
@@ -56,10 +79,14 @@ export default function Reports() {
     );
   }
 
-  // Prepare data for charts
+  // Chuẩn bị dữ liệu cho các biểu đồ
+  // Lấy danh sách tên môn học để làm labels
   const subjectNames = statistics.map((stat) => stat.subjectName);
   
-  // Bar Chart Data - Comparison by subject
+  /**
+   * Bar Chart Data - So sánh điểm theo môn học
+   * Hiển thị 4 mức độ điểm cho từng môn học
+   */
   const barChartData = {
     labels: subjectNames,
     datasets: [
@@ -94,7 +121,10 @@ export default function Reports() {
     ],
   };
 
-  // Doughnut Chart Data - Overall distribution
+  /**
+   * Doughnut Chart Data - Phân bố tổng quan
+   * Tính tổng số học sinh ở mỗi mức điểm trên tất cả các môn
+   */
   const totalExcellent = statistics.reduce((sum, stat) => sum + stat.levelExcellent, 0);
   const totalGood = statistics.reduce((sum, stat) => sum + stat.levelGood, 0);
   const totalAverage = statistics.reduce((sum, stat) => sum + stat.levelAverage, 0);
@@ -122,7 +152,10 @@ export default function Reports() {
     ],
   };
 
-  // Line Chart Data - Total scores trend by subject
+  /**
+   * Line Chart Data - Xu hướng tổng điểm theo môn
+   * Hiển thị tổng số học sinh có điểm ở mỗi môn học
+   */
   const lineChartData = {
     labels: subjectNames,
     datasets: [
@@ -140,6 +173,12 @@ export default function Reports() {
     ],
   };
 
+  /**
+   * Chart Options - Cấu hình chung cho Bar và Line charts
+   * - Responsive: Tự động điều chỉnh kích thước
+   * - Font: Sử dụng font Rubik
+   * - Colors: Màu sắc tối ưu cho accessibility
+   */
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -194,6 +233,10 @@ export default function Reports() {
     },
   };
 
+  /**
+   * Doughnut Chart Options - Cấu hình riêng cho Doughnut chart
+   * Legend ở bottom để dễ nhìn hơn
+   */
   const doughnutOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -227,7 +270,7 @@ export default function Reports() {
     <div className="w-full space-y-4 md:space-y-6">
       <h2 className="text-2xl md:text-3xl font-bold text-primary mb-4 md:mb-8">Báo Cáo Thống Kê</h2>
 
-      {/* Summary Cards */}
+      {/* Summary Cards - Hiển thị tổng số học sinh ở mỗi mức điểm */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
         <div className="bg-white rounded-lg md:rounded-xl p-4 md:p-6 shadow-lg border-l-4 border-green-500">
           <div className="flex items-center justify-between">
@@ -267,9 +310,9 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* Charts Grid */}
+      {/* Charts Grid - Hiển thị Bar và Doughnut charts cạnh nhau */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
-        {/* Bar Chart */}
+        {/* Bar Chart - So sánh điểm theo môn học */}
         <div className="bg-white rounded-lg md:rounded-xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
           <h3 className="text-lg md:text-xl font-semibold text-primary mb-3 md:mb-4">So Sánh Điểm Theo Môn Học</h3>
           <div className="h-64 md:h-80">
@@ -277,7 +320,7 @@ export default function Reports() {
           </div>
         </div>
 
-        {/* Doughnut Chart */}
+        {/* Doughnut Chart - Phân bố tổng quan tất cả môn */}
         <div className="bg-white rounded-lg md:rounded-xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
           <h3 className="text-lg md:text-xl font-semibold text-primary mb-3 md:mb-4">Phân Bố Tổng Quan</h3>
           <div className="h-64 md:h-80">
@@ -286,7 +329,7 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* Line Chart */}
+      {/* Line Chart - Xu hướng tổng điểm theo môn học */}
       <div className="bg-white rounded-lg md:rounded-xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow mb-4 md:mb-6">
         <h3 className="text-lg md:text-xl font-semibold text-primary mb-3 md:mb-4">Xu Hướng Tổng Điểm Theo Môn</h3>
         <div className="h-64 md:h-80">
@@ -294,7 +337,7 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* Data Table */}
+      {/* Data Table - Bảng dữ liệu chi tiết với tổng kết */}
       <div className="bg-white rounded-lg md:rounded-xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
         <h3 className="text-lg md:text-xl font-semibold text-primary mb-4 md:mb-6">Bảng Dữ Liệu Chi Tiết</h3>
         <div className="overflow-x-auto -mx-4 md:mx-0">
