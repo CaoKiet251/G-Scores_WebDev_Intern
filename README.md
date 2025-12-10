@@ -1,4 +1,4 @@
-# G-Scores – Tra cứu & phân tích điểm thi THPT 2024
+# G-Scores – Tra cứu & phân tích điểm thi THPT
 
 Ứng dụng web cho phép tìm kiếm điểm thi THPT theo số báo danh, xem top thí sinh theo từng khối và dựng biểu đồ nhanh. Kiến trúc gồm frontend React + Vite, backend NestJS + Prisma, PostgreSQL và Redis cache. Bộ dữ liệu mẫu nằm tại `dataset/diem_thi_thpt_2024.csv` và có script nhập liệu tự động.
 
@@ -10,7 +10,6 @@
 ## Yêu cầu hệ thống
 - Node.js 18+ và npm.
 - PostgreSQL 15+ và Redis 7+ (nếu không dùng Docker).
-- Docker & Docker Compose (tùy chọn, chạy nhanh toàn bộ stack).
 
 ## Hướng dẫn chạy dựa ns
 ### 1. Backend
